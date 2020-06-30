@@ -1,3 +1,6 @@
+# Setup
+
+## Installation
 
 ## Datasets
 
@@ -13,42 +16,19 @@
 
 - https://zenodo.org/record/3757476#.XtU6wC2ZOuV (create directories: CT, Lung_Mask, Infection_Mask)
 
-### JCU fish
+# Reproducing paper experiments
 
-- https://www.dropbox.com/sh/b2jlua76ogyr5rk/AABsJVljG7v2BOunE1k4f_XTa?dl=0
+Experiment hyperparameters are defined in `./exp_configs/weakly_exps.py`
 
-## Active Learning for Counting
-
-```
-python trainval.py -e al_trancos -sb <savedir_base> -d <datadir> -r 1
-```
-
-## Active Learning for Segmentation
+Run the following command to reproduce the experiments in the paper:
 
 ```
-python trainval.py -e al_cp -sb <savedir_base> -d <datadir> -r 1
+python trainval.py -e weakly_covid19_${DATASET}_${SPLIT} -sb ${SAVEDIR_BASE} -d ${DATADIR} -r 1
 ```
 
-## Active Learning for Covid19
+The variables (`${...}`) can be substituted with the following values:
 
-```
-python trainval.py -e al_covid19_v2 -sb <savedir_base> -d <datadir> -r 1
-```
-## Weakly supervised for Covid19 version 2
-
-```
-python trainval.py -e weakly_covid19_v2_mixed -sb <savedir_base> -d <datadir> -r 1
-```
-
-## Weakly supervised for Covid19
-
-```
-python trainval.py -e weakly_covid19 -sb <savedir_base> -d <datadir> -r 1
-```
-
-## Weakly supervised for JCU fish
-
-```
-python trainval.py -e weakly_JCUfish -sb <savedir_base> -d <datadir> -r 1
-```
-
+- `DATASET` (the COVID dataset): `v1`, `v2`, or `v3`
+- `SPLIT` (the dataset split): `mixed`, `sep`
+- `SAVEDIR_BASE`: Absolute path to where results will be saved
+- `DATADIR`: Absolute path containing the downloaded datasets
