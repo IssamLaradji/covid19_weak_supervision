@@ -32,3 +32,6 @@ The variables (`${...}`) can be substituted with the following values:
 - `SPLIT` (the dataset split): `mixed`, `sep`
 - `SAVEDIR_BASE`: Absolute path to where results will be saved
 - `DATADIR`: Absolute path containing the downloaded datasets
+
+## Cite
+
