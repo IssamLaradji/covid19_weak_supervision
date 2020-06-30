@@ -1,0 +1,37 @@
+Images: 31
+Pred: BestObjectness
+mAP50: 0.38 - mAP75:0.27
+
+Images: 10
+Pred: BestObjectness
+mAP75:0.45
+
+Pred: BestBoundary
+mAP75:0.14
+
+Images: 31
+Pred: UB_ModelPoints
+mAP50: 0.51 - mAP75:0.41
+
+
+Images: 31
+Pred: excitementInside
+mAP50: x - mAP75:x
+
+
+
+pred mask: 25 %
+
+prob mask: 25%
+
+
+
+prob_mask + objectness : 28%
+prob_mask + objectness + blob intersection: 20%
+prob_mask + blob intersection: 20%
+prob_mask + blob intersection naive: 20%
+
+prob_mask + blob intersection + objectness + excited iNTERSECTION: 29%
+
+
+recursive = objectness: mAP50: 0.33 - mAP75:0.21
