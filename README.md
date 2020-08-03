@@ -1,4 +1,4 @@
-# A Weakly Supervised Consistency-based Learning  Method for COVID-19 Segmentation in CT Images
+# A Weakly Supervised Consistency-based Learning  Method for COVID-19 Segmentation in CT Images [[Paper]](https://arxiv.org/abs/2007.02180)
 
 ![](method.png)
 
