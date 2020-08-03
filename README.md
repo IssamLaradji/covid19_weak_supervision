@@ -35,4 +35,11 @@ The variables (`${...}`) can be substituted with the following values:
 - `DATADIR`: Absolute path containing the downloaded datasets
 
 ## Cite
-
+```
+@article{laradji2020weakly,
+  title={A Weakly Supervised Consistency-based Learning Method for COVID-19 Segmentation in CT Images},
+  author={Laradji, Issam and Rodriguez, Pau and Manas, Oscar and Lensink, Keegan and Law, Marco and Kurzman, Lironne and Parker, William and Vazquez, David and Nowrouzezahrai, Derek},
+  journal={arXiv preprint arXiv:2007.02180},
+  year={2020}
+}
+```
