@@ -1,4 +1,7 @@
 # A Weakly Supervised Consistency-based Learning  Method for COVID-19 Segmentation in CT Images
+
+![](method.png)
+
 This repository contains the code to reproduce the experiments of the paper.
 
 ## Installation
@@ -18,6 +21,8 @@ This repository contains the code to reproduce the experiments of the paper.
 - https://zenodo.org/record/3757476#.XtU6wC2ZOuV (create directories: CT, Lung_Mask, Infection_Mask)
 
 ## Reproducing paper experiments
+
+![](method2.png)
 
 Experiment hyperparameters are defined in `./exp_configs/weakly_exps.py`
 
