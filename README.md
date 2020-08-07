@@ -1,5 +1,5 @@
-# WACV2021: A Weakly Supervised Consistency-based Learning  Method for COVID-19 Segmentation in CT Images [[Paper]](https://arxiv.org/abs/2007.02180)
-
+# A Weakly Supervised Consistency-based Learning  Method for COVID-19 Segmentation in CT Images [[Paper]](https://arxiv.org/abs/2007.02180)
+## Accepted at WACV2021 Conference
 ![](method.png)
 
 This repository contains the code to reproduce the experiments of the paper.
