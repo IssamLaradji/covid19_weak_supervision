@@ -17,4 +17,4 @@ seaborn>=0.9.0
 batchgenerators>=0.20.1
 scikit-image>=0.14.2
 kornia==0.2.0
--e git://github.com/ElementAI/haven.git#egg=haven
+-e git://github.com/haven-ai/haven.git#egg=haven
