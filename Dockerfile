@@ -1,13 +1,12 @@
 FROM jupyter/datascience-notebook
 
-
 ENV JUPYTER_ENABLE_LAB true
 ENV PIP_TARGET /home/jovyan/work/python_packages
 ENV PYTHONPATH /home/jovyan/work/python_packages
 ENV TORCH_HUB /home/jovyan/work
 ENV TORCH_HOME /home/jovyan/work
 
-WORKDIR /home/jovyan/covid
+WORKDIR /home/jovyan/
 
 RUN pip install torch==1.4.0
 RUN pip install torchvision==0.5.0
@@ -37,10 +36,8 @@ RUN pip install nibabel
 RUN mkdir -p /home/jovyan/work/python_packages
 
 EXPOSE 8080
-WORKDIR /home/jovyan/
-RUN rm -rf /home/jovyan/covid
-COPY --chown=jovyan:users . /home/jovyan/covid
 
+COPY --chown=jovyan:users . /home/jovyan/covid
 
 CMD ["/bin/sh", "-c", "start-notebook.sh --ip=0.0.0.0 --port=8080 --no-browser --LabApp.token='' --LabApp.allow_remote_access=True --LabApp.allow_origin='*' --LabApp.disable_check_xsrf=True"]
 
