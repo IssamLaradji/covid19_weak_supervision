@@ -35,7 +35,7 @@ python trainval.py -e weakly_covid19_${DATASET}_${SPLIT} -sb ${SAVEDIR_BASE} -d 
 The variables (`${...}`) can be substituted with the following values:
 
 - `DATASET` (the COVID dataset): `v1`, `v2`, or `v3`
-- `SPLIT` (the dataset split): `mixed`, `sep`
+- `SPLIT` (the dataset split): `mixed_c2`, `sep_c2`
 - `SAVEDIR_BASE`: Absolute path to where results will be saved
 - `DATADIR`: Absolute path containing the downloaded datasets
 
