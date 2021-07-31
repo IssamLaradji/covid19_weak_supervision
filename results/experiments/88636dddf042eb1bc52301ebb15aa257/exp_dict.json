@@ -1,0 +1,22 @@
+{
+    "batch_size": 8,
+    "dataset": {
+        "n_classes": 2,
+        "name": "covid19_v2_mixed"
+    },
+    "dataset_size": {
+        "train": "all",
+        "val": "all"
+    },
+    "lr": 0.0001,
+    "max_epoch": 101,
+    "model": {
+        "base": "fcn8_vgg16",
+        "loss": "cons_point_loss",
+        "n_channels": 3,
+        "n_classes": 1,
+        "name": "semseg"
+    },
+    "num_channels": 1,
+    "optimizer": "adam"
+}
