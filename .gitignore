@@ -5,6 +5,7 @@ __pycache__/
 results/results.ipynb
 # C extensions
 *.so
+*.pth
 tmp.png
 # Distribution / packaging
 .Python
