@@ -1,32 +1,26 @@
 # -*- coding: utf-8 -*-
 
-import os, pprint, tqdm
+import os, tqdm
 import numpy as np
 import pandas as pd
 from haven import haven_utils as hu 
-from haven import haven_img as hi
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
-from .networks import infnet, fcn8_vgg16, unet_resnet, resnet_seam
 from src import utils as ut
-from src import models
 from src.modules.lcfcn import lcfcn_loss
 import sys
-import kornia
-from kornia.augmentation import RandomAffine
 from scipy.ndimage.filters import gaussian_filter
 from kornia.geometry.transform import flips
 from . import optimizers, metrics, networks
 from src.modules import sstransforms as sst
 
 class SemSeg(torch.nn.Module):
-    def __init__(self, exp_dict):
+    def __init__(self, exp_dict, device='cuda'):
         super().__init__()
         self.exp_dict = exp_dict
         self.train_hashes = set()
         self.n_classes = self.exp_dict['model'].get('n_classes', 1)
-
+        self.device = device
         self.init_model()
         self.first_time = True
         self.epoch = 0
@@ -35,7 +29,7 @@ class SemSeg(torch.nn.Module):
         self.model_base = networks.get_network(self.exp_dict['model']['base'],
                                               n_classes=self.n_classes,
                                               exp_dict=self.exp_dict)
-        self.cuda()
+        self.to(self.device)
         self.opt = optimizers.get_optimizer(self.exp_dict['optimizer'], self.model_base, self.exp_dict)
 
 
@@ -107,14 +101,14 @@ class SemSeg(torch.nn.Module):
             ind = points!=255
             if ind.sum() != 0:
                 loss += F.binary_cross_entropy_with_logits(logits[ind], 
-                                        points[ind].detach().float().cuda(), 
+                                        points[ind].detach().float().to(self.device), 
                                         reduction='mean')
 
                 points_rotated = flips.Hflip()(points)
                 points_rotated = sst.batch_rotation(points_rotated, rotations)
                 ind = points_rotated!=255
                 loss += F.binary_cross_entropy_with_logits(logits_rotated[ind], 
-                                        points_rotated[ind].detach().float().cuda(), 
+                                        points_rotated[ind].detach().float().to(self.device), 
                                         reduction='mean')
 
         elif loss_name == 'cons_point_loss':
@@ -127,20 +121,20 @@ class SemSeg(torch.nn.Module):
             ind = points!=255
             if ind.sum() != 0:
                 loss += F.binary_cross_entropy_with_logits(logits[ind], 
-                                        points[ind].float().cuda(), 
+                                        points[ind].float().to(self.device), 
                                         reduction='mean')
 
                 points_flip = flips.Hflip()(points)
                 ind = points_flip!=255
                 loss += F.binary_cross_entropy_with_logits(logits_flip[ind], 
-                                        points_flip[ind].float().cuda(), 
+                                        points_flip[ind].float().to(self.device), 
                                         reduction='mean')
 
         elif loss_name == "elastic_cons_point_loss":
             """ Performs an elastic transformation to the images and logits and 
                 computes the consistency between the transformed logits and the
                 logits of the transformed images see: https://gist.github.com/chsasank/4d8f68caf01f041a6453e67fb30f8f5a """ 
-            points = points[:,None].float().cuda()
+            points = points[:,None].float().to(self.device)
             ind = points!=255
 
             B, C, H, W = images.shape
@@ -151,16 +145,16 @@ class SemSeg(torch.nn.Module):
                 grid = (grid - 0.5) * 2
                 return grid
             grid_x, grid_y = torch.meshgrid(torch.arange(H), torch.arange(W))
-            grid_x = grid_x.float().cuda()
-            grid_y = grid_y.float().cuda()
+            grid_x = grid_x.float().to(self.device)
+            grid_y = grid_y.float().to(self.device)
             sigma=self.exp_dict["model"]["sigma"]
             alpha=self.exp_dict["model"]["alpha"]
             indices = torch.stack([grid_y, grid_x], -1).view(1, H, W, 2).expand(B, H, W, 2).contiguous()
             indices = norm_grid(indices)
             dx = gaussian_filter((np.random.rand(H, W) * 2 - 1), sigma, mode="constant", cval=0) * alpha
             dy = gaussian_filter((np.random.rand(H, W) * 2 - 1), sigma, mode="constant", cval=0) * alpha
-            dx = torch.from_numpy(dx).cuda().float()
-            dy = torch.from_numpy(dy).cuda().float()
+            dx = torch.from_numpy(dx).to(self.device).float()
+            dy = torch.from_numpy(dy).to(self.device).float()
             dgrid_x = grid_x + dx
             dgrid_y = grid_y + dy
             dgrid_y = norm_grid(dgrid_y)
@@ -190,7 +184,7 @@ class SemSeg(torch.nn.Module):
                 loss += lcfcn_loss.compute_loss((pt==1).long(), lg.sigmoid())
 
                 # loss += lcfcn_loss.compute_binary_lcfcn_loss(l[None], 
-                #         p[None].long().cuda())
+                #         p[None].long().to(self.device))
 
         elif loss_name == 'point_loss':
             points = points[:,None]
@@ -198,13 +192,13 @@ class SemSeg(torch.nn.Module):
             # self.vis_on_batch(batch, savedir_image='tmp.png')
 
             # POINT LOSS
-            # loss = ut.joint_loss(logits, points[:,None].float().cuda(), ignore_index=255)
+            # loss = ut.joint_loss(logits, points[:,None].float().to(self.device), ignore_index=255)
             # print(points[ind].sum())
             if ind.sum() == 0:
                 loss = 0.
             else:
                 loss = F.binary_cross_entropy_with_logits(logits[ind], 
-                                        points[ind].float().cuda(), 
+                                        points[ind].float().to(self.device), 
                                         reduction='mean')
                                         
             # print(points[ind].sum().item(), float(loss))
@@ -215,14 +209,14 @@ class SemSeg(torch.nn.Module):
             loss = 0.
             if ind.sum() != 0:
                 loss = F.binary_cross_entropy_with_logits(logits[ind], 
-                                        points[ind].float().cuda(), 
+                                        points[ind].float().to(self.device), 
                                         reduction='mean')
 
                 logits_flip = self.model_base(flips.Hflip()(images))
                 points_flip = flips.Hflip()(points)
                 ind = points_flip!=255
                 loss += F.binary_cross_entropy_with_logits(logits_flip[ind], 
-                                        points_flip[ind].float().cuda(), 
+                                        points_flip[ind].float().to(self.device), 
                                         reduction='mean')
 
 
@@ -235,22 +229,22 @@ class SemSeg(torch.nn.Module):
 
         self.opt.zero_grad()
 
-        images = batch["images"].cuda()
+        images = batch["images"].to(self.device)
         
         # compute loss
         loss_name = self.exp_dict['model']['loss']
         if loss_name in ['joint_cross_entropy']:
             logits = self.model_base(images)
             # full supervision
-            loss = self.compute_mask_loss(loss_name, images, logits, masks=batch["masks"].cuda())
+            loss = self.compute_mask_loss(loss_name, images, logits, masks=batch["masks"].to(self.device))
         elif loss_name in ['point_loss', 'cons_point_loss', 'lcfcn_loss', 'affine_cons_point_loss', 'rot_point_loss', 'elastic_cons_point_loss', 'toponet']:
             logits = self.model_base(images)
             # point supervision
-            loss = self.compute_point_loss(loss_name, images, logits, points=batch["points"].cuda())
+            loss = self.compute_point_loss(loss_name, images, logits, points=batch["points"].to(self.device))
         elif loss_name in ['multiscale_cons_point_loss']:
             logits = self.model_base(images, return_features=True)
             # point supervision
-            loss = self.compute_point_loss(loss_name, images, logits, points=batch["points"].cuda())
+            loss = self.compute_point_loss(loss_name, images, logits, points=batch["points"].to(self.device))
         
         if loss != 0:
             loss.backward()
@@ -266,13 +260,13 @@ class SemSeg(torch.nn.Module):
     @torch.no_grad()
     def predict_on_batch(self, batch):
         self.eval()
-        image = batch['images'].cuda()
+        image = batch['images'].to(self.device)
 
         if hasattr(self.model_base, 'predict_on_batch'):
             return self.model_base.predict_on_batch(batch)
             s5, s4, s3, s2, se = self.model_base.forward(image)
             res = s2
-            res = F.upsample(res, size=batch['meta'][0]['shape'],              
+            res = F.interpolate(res, size=batch['meta'][0]['shape'],              
                          mode='bilinear', align_corners=False)
             res = res.sigmoid().data.cpu().numpy()
             res = (res - res.min()) / (res.max() - res.min() + 1e-8)
@@ -281,7 +275,7 @@ class SemSeg(torch.nn.Module):
         elif self.n_classes == 1:
             res = self.model_base.forward(image)
             if 'shape' in batch['meta'][0]:
-                res = F.upsample(res, size=batch['meta'][0]['shape'],              
+                res = F.interpolate(res, size=batch['meta'][0]['shape'],              
                             mode='bilinear', align_corners=False)
             res = (res.sigmoid().data.cpu().numpy() > 0.5).astype('float')
         else:
@@ -299,22 +293,24 @@ class SemSeg(torch.nn.Module):
 
         image = F.interpolate(image, size=gt.shape[-2:], mode='bilinear', align_corners=False)
         img_res = hu.save_image(savedir_image,
-                     hu.denormalize(image, mode='rgb')[0],
-                      mask=res[0], return_image=True)
+                     image, mask=res[0], denorm='rgb', return_image=True)
 
         img_gt = hu.save_image(savedir_image,
-                     hu.denormalize(image, mode='rgb')[0],
-                      mask=gt[0], return_image=True)
-        img_gt = models.text_on_image( 'Groundtruth', np.array(img_gt), color=(0,0,0))
-        img_res = models.text_on_image( 'Prediction', np.array(img_res), color=(0,0,0))
+                     image,
+                      mask=gt[0],denorm='rgb',  return_image=True)
+        # img_gt = models.text_on_image( 'Groundtruth', np.array(img_gt), color=(0,0,0))
+        # img_res = models.text_on_image( 'Prediction', np.array(img_res), color=(0,0,0))
+        img_gt = np.array(img_gt)
+        img_res =  np.array(img_res)
         
-        if 'points' in batch:
-            pts = batch['points'][0].numpy().copy()
-            pts[pts == 1] = 2
-            pts[pts == 0] = 1
-            pts[pts == 255] = 0
-            img_gt = np.array(hu.save_image(savedir_image, img_gt/255.,
-                                points=pts, radius=2, return_image=True))
+        # if 'points' in batch:
+        #     pts = batch['points'][0].numpy().copy()
+        #     pts[pts == 1] = 2
+        #     pts[pts == 0] = 1
+        #     pts[pts == 255] = 0
+        #     img_gt = np.array(hu.save_image(savedir_image, img_gt,
+        #                         # points=pts, radius=2,
+        #                          return_image=True))
         img_list = [np.array(img_gt), np.array(img_res)]
         hu.save_image(savedir_image, np.hstack(img_list))
 
@@ -336,59 +332,6 @@ class SemSeg(torch.nn.Module):
         
         return val_meter.get_avg_score()
         
-    @torch.no_grad()
-    def compute_uncertainty(self, images, replicate=False, scale_factor=None, n_mcmc=20, method='entropy'):
-        self.eval()
-        set_dropout_train(self)
-
-        # put images to cuda
-        images = images.cuda()
-        _, _, H, W= images.shape
-
-        if scale_factor is not None:
-            images = F.interpolate(images, scale_factor=scale_factor)
-        # variables
-        input_shape = images.size()
-        batch_size = input_shape[0]
-
-        if replicate and False:
-            # forward on n_mcmc batch      
-            images_stacked = torch.stack([images] * n_mcmc)
-            images_stacked = images_stacked.view(batch_size * n_mcmc, *input_shape[1:])
-            logits = self.model_base(images_stacked)
-            
-
-        else:
-            # for loop over n_mcmc
-            logits = torch.stack([self.model_base(images) for _ in range(n_mcmc)])
-            
-            logits = logits.view(batch_size * n_mcmc, *logits.size()[2:])
-
-        logits = logits.view([n_mcmc, batch_size, *logits.size()[1:]])
-        _, _, n_classes, _, _ = logits.shape
-        # binary do sigmoid 
-        if n_classes == 1:
-            probs = logits.sigmoid()
-        else:
-            probs = F.softmax(logits, dim=2)
-
-        if scale_factor is not None:
-            probs = F.interpolate(probs, size=(probs.shape[2], H, W))
-
-        self.eval()
-
-        if method == 'entropy':
-            score_map = - xlogy(probs).mean(dim=0).sum(dim=1)
-
-        if method == 'bald':
-            left = - xlogy(probs.mean(dim=0)).sum(dim=1)
-            right = - xlogy(probs).sum(dim=2).mean(0)
-            bald = left - right
-            score_map = bald
-
-
-        return score_map 
-
 
 
 class TrainMonitor:
@@ -417,4 +360,4 @@ def xlogy(x, y=None):
     if y is None:
         y = x
     assert y.min() >= 0
-    return x * torch.where(x == 0., z.cuda(), torch.log(y))
+    return x * torch.where(x == 0., z.to(x.device), torch.log(y))

@@ -2,25 +2,14 @@
 import torch
 import os
 import tqdm 
-from . import semseg, semseg_counting, semseg_active
+from . import semseg
 
 import torch
 
 
-def get_model(model_dict, exp_dict=None, train_set=None):
-    if model_dict['name'] in ["wisenet"]:
-        model =  wisenet.WiseNet(exp_dict, train_set)
-
-    if model_dict['name'] in ["semseg_active"]:
-        model =  semseg_active.get_semsegactive(semseg.SemSeg)(exp_dict, train_set)
-    if model_dict['name'] in ["semseg_active_counting"]:
-        model =  semseg_active.get_semsegactive(semseg_counting.SemSegCounting)(exp_dict, train_set)
-
-    if model_dict['name'] in ["semseg_counting"]:
-        model =  semseg_counting.SemSegCounting(exp_dict)
-
+def get_model(model_dict, exp_dict=None, train_set=None, device='cuda'):
     if model_dict['name'] in ["semseg"]:
-        model =  semseg.SemSeg(exp_dict)
+        model =  semseg.SemSeg(exp_dict, device=device)
 
         # load pretrained
         if 'pretrained' in model_dict:

@@ -5,7 +5,6 @@ import numpy as np
 from haven import haven_utils as hu
 from torchvision import transforms
 import pydicom, tqdm
-from . import transformers
 from PIL import Image
 import PIL
 
@@ -84,7 +83,7 @@ class Covid19V2(torch.utils.data.Dataset):
         self.img_transform = transforms.Compose([
 
             transforms.CenterCrop((384, 385)),
-            transforms.Resize((self.size, self.size)),
+            # transforms.Resize((self.size, self.size)),
             transforms.ToTensor(),
             transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])])
         
@@ -92,7 +91,7 @@ class Covid19V2(torch.utils.data.Dataset):
             self.gt_transform = transforms.Compose([
 
             transforms.CenterCrop((384, 385)),
-            transforms.Resize((self.size, self.size), interpolation=PIL.Image.NEAREST),
+            # transforms.Resize((self.size, self.size), interpolation=PIL.Image.NEAREST),
                 # transforms.ToTensor()]
             ])
         else:

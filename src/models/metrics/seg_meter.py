@@ -55,10 +55,10 @@ class SegMeter:
         mDice = np.mean(dice)
         mIoU = np.mean(iou)
 
-        prec = TP / (TP + FP)
-        recall = TP / (TP + FN)
-        spec = TN/(TN+FP)
-        fscore = (( 2.0 * prec * recall ) / (prec + recall))
+        prec = TP / np.maximum((TP + FP), 1e-8)
+        recall = TP / np.maximum((TP + FN), 1e-8)
+        spec = TN/ np.maximum((TN+FP), 1e-8)
+        fscore = (( 2.0 * prec * recall ) / np.maximum((prec + recall), 1e-8))
 
         val_dict = {}
         if self.n_classes == 1:

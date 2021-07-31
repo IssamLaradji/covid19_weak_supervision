@@ -71,11 +71,11 @@ class InfNet(nn.Module):
             opt.zero_grad()
             trainsize = int(round(size*rate/32)*32)
             if rate != 1:
-                images = F.upsample(images, size=(trainsize, trainsize), mode='bilinear', align_corners=True)
-                gts = F.upsample(gts.float(), size=(trainsize, trainsize),
+                images = F.interpolate(images, size=(trainsize, trainsize), mode='bilinear', align_corners=True)
+                gts = F.interpolate(gts.float(), size=(trainsize, trainsize),
                                      mode='bilinear', align_corners=True)
                 if self.loss is None:
-                    edges = F.upsample(edges, size=(trainsize, trainsize), mode='bilinear', align_corners=True)
+                    edges = F.interpolate(edges, size=(trainsize, trainsize), mode='bilinear', align_corners=True)
 
             # ---- forward ----
             s5, s4, s3, s2, se = self.forward(images)
