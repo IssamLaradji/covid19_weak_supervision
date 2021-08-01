@@ -318,7 +318,7 @@ class SemSeg(torch.nn.Module):
         self.eval()
         val_meter = metrics.SegMeter(split=loader.dataset.split)
         i_count = 0
-        for i, batch in enumerate(tqdm.tqdm(loader)):
+        for i, batch in enumerate(tqdm.tqdm(loader, desc='Validating')):
             # make sure it wasn't trained on
             for m in batch['meta']:
                 assert(m['hash'] not in self.train_hashes)
