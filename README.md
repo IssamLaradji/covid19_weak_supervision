@@ -1,7 +1,7 @@
 # A Weakly Supervised Consistency-based Learning  Method for COVID-19 Segmentation in CT Images [[Paper]](https://arxiv.org/abs/2007.02180)
 ## Accepted at WACV2021 Conference. Try the code in this [colab.](https://colab.research.google.com/drive/1UvSUqjDiEGrTg6FraZMKrBYNalyHPMJI?usp=sharing#scrollTo=S6m1RkAL6xUe)
 
-![](method.png)
+![](results/method.png)
 
 
 ## 1. Download Datasets
