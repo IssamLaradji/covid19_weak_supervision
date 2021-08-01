@@ -192,4 +192,4 @@ if __name__ == '__main__':
                   reset=args.reset,
                   python_binary_path=args.python_binary_path,
                   job_config=jc, args=args, use_threads=True,
-                  results_fname='results/results.ipynb')
+                  results_fname='results.ipynb')

@@ -4,9 +4,8 @@
 
 This repository contains the code to reproduce the experiments of the paper.
 
-## Installation
 
-## Datasets
+## 1. Download Datasets
 
 ### COVID19
 
@@ -20,11 +19,9 @@ This repository contains the code to reproduce the experiments of the paper.
 
 - https://zenodo.org/record/3757476#.XtU6wC2ZOuV (create directories: CT, Lung_Mask, Infection_Mask)
 
-## Reproducing paper experiments
+## 2. Train & Validate
 
-![](method2.png)
-
-Experiment hyperparameters are defined in `./exp_configs/weakly_exps.py`
+![](results/method2.png)
 
 Run the following command to reproduce the experiments in the paper:
 
@@ -38,6 +35,17 @@ The variables (`${...}`) can be substituted with the following values:
 - `SPLIT` (the dataset split): `mixed_c2`, `sep_c2`
 - `SAVEDIR_BASE`: Absolute path to where results will be saved
 - `DATADIR`: Absolute path containing the downloaded datasets
+
+Experiment hyperparameters are defined in `./exp_configs/weakly_exps.py`
+
+### 3. Visualize the Results
+
+Open `results.ipynb` for visualization.
+
+<p align="center" width="100%">
+<img width="100%" src="https://raw.githubusercontent.com/haven-ai/haven-ai/master/docs/vis.gif">
+</p>
+
 
 ## Cite
 ```
